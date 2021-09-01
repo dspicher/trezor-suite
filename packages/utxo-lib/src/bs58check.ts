@@ -1,4 +1,5 @@
 import { bitcoin as BITCOIN_NETWORK, isNetworkType } from './networks';
+import * as bchaddrjs from 'bchaddrjs';
 import * as bs58 from 'bs58';
 import * as bs58check from 'bs58check';
 import { blake256 } from './crypto';
@@ -40,11 +41,20 @@ export function encodeBlake256(payload: Buffer) {
 }
 
 export function encode(payload: Buffer, network = BITCOIN_NETWORK) {
-    return isNetworkType('decred', network) ? encodeBlake256(payload) : bs58check.encode(payload);
+    if (isNetworkType('decred', network)) return encodeBlake256(payload);
+    const encoded = bs58check.encode(payload);
+    return isNetworkType('bitcoinCash', network) ? bchaddrjs.toCashAddress(encoded) : encoded;
 }
 
 export function decode(payload: string, network = BITCOIN_NETWORK) {
-    return isNetworkType('decred', network) ? decodeBlake256(payload) : bs58check.decode(payload);
+    if (isNetworkType('decred', network)) return decodeBlake256(payload);
+    if (isNetworkType('bitcoinCash', network) && !bchaddrjs.isCashAddress(payload)) {
+        throw Error(`${payload} is not a cash address`);
+    }
+    const address = isNetworkType('bitcoinCash', network)
+        ? bchaddrjs.toLegacyAddress(payload)
+        : payload;
+    return bs58check.decode(address);
 }
 
 export function encodeMultibytePayload(hash: Buffer, version: number, network = BITCOIN_NETWORK) {

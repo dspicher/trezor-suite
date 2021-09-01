@@ -30,6 +30,7 @@
         "build:lib": "rimraf lib && tsc --p ./tsconfig.lib.json"
     },
     "dependencies": {
+        "bchaddrjs": "^0.5.2",
         "bech32": "^2.0.0",
         "bip66": "^1.1.5",
         "bitcoin-ops": "^1.4.1",
@@ -42,6 +43,7 @@
         "typeforce": "^1.18.0"
     },
     "devDependencies": {
+        "@types/bchaddrjs": "^0.4.0",
         "@types/bs58": "^4.0.1",
         "@types/bs58check": "^2.1.0",
         "@types/create-hash": "^1.2.2",
