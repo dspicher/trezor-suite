@@ -80,7 +80,7 @@ class WorkerCommon {
         this.post.call(null, this.removeEmpty(data));
     }
 
-    validateAddresses(addr: string[]) {
+    private validateAddresses(addr: string[]) {
         if (!Array.isArray(addr)) throw new CustomError('invalid_param', '+addresses');
         const seen: string[] = [];
         return addr.filter(a => {
@@ -107,7 +107,7 @@ class WorkerCommon {
         return this.addresses;
     }
 
-    validateAccounts(acc: SubscriptionAccountInfo[]): SubscriptionAccountInfo[] {
+    private validateAccounts(acc: SubscriptionAccountInfo[]): SubscriptionAccountInfo[] {
         if (!Array.isArray(acc)) throw new CustomError('invalid_param', '+accounts');
         const seen: string[] = [];
         return acc.filter(a => {
@@ -120,7 +120,7 @@ class WorkerCommon {
         });
     }
 
-    getAccountAddresses(acc: SubscriptionAccountInfo) {
+    private getAccountAddresses(acc: SubscriptionAccountInfo) {
         if (acc.addresses) {
             const { change, used, unused } = acc.addresses;
             return change.concat(used, unused).map(a => a.address);

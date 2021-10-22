@@ -47,8 +47,8 @@ export interface Utxo {
     vout: number;
     amount: string;
     blockHeight: number;
-    address: string;
-    path: string;
+    address?: string;
+    path?: string;
     confirmations: number;
     coinbase?: boolean;
 }

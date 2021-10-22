@@ -27,6 +27,7 @@
     },
     "scripts": {
         "dev": "webpack serve --config ./webpack/dev.babel.js",
+        "dev:electrum": "ts-node ./src/workers/electrum/devrun.ts",
         "build:lib": "yarn build && yarn build:workers",
         "build:workers": "rimraf build && yarn build:workers-web && yarn build:workers-node && yarn build:workers-module",
         "build:workers-web": "webpack --config ./webpack/workers.web.babel.js",

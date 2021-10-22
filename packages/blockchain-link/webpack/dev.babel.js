@@ -49,6 +49,8 @@ module.exports = {
             https: false, // required by ripple-lib
             crypto: require.resolve('crypto-browserify'),
             stream: require.resolve('stream-browserify'),
+            tls: false,
+            net: false,
         },
     },
     performance: {

@@ -7,6 +7,7 @@ module.exports = {
     entry: {
         'blockbook-worker': `${SRC}workers/blockbook/index.ts`,
         'ripple-worker': `${SRC}workers/ripple/index.ts`,
+        'electrum-worker': `${SRC}workers/electrum/index.ts`,
     },
     output: {
         filename: '[name].js',
