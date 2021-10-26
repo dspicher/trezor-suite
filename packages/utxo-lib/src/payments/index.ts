@@ -7,6 +7,9 @@ import { p2pkh } from './p2pkh';
 import { p2sh } from './p2sh';
 import { p2wpkh } from './p2wpkh';
 import { p2wsh } from './p2wsh';
+import { sstxchange } from './sstxchange';
+import { sstxpkh } from './sstxpkh';
+import { sstxsh } from './sstxsh';
 import type { Network } from '../networks';
 
 export interface Payment {
@@ -37,7 +40,7 @@ export interface PaymentOpts {
 
 export type { StackElement, Stack, StackFunction } from '../types';
 
-export { embed, p2ms, p2pk, p2pkh, p2sh, p2wpkh, p2wsh };
+export { embed, p2ms, p2pk, p2pkh, p2sh, p2wpkh, p2wsh, sstxchange, sstxpkh, sstxsh };
 
 // TODO
 // witness commitment
