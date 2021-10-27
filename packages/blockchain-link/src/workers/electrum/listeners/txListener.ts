@@ -1,7 +1,8 @@
 import { RESPONSES } from '../../../constants';
-import { createAddressManager } from '../utils';
+import { createAddressManager, getTransactions } from '../utils';
+import { transformTransaction } from '../../blockbook/utils';
 import type WorkerCommon from '../../common';
-import type { ElectrumAPI, StatusChange } from '../api';
+import type { ElectrumAPI, HistoryTx, StatusChange } from '../api';
 import type { Subscribe, Unsubscribe } from '../../../types/messages';
 
 type Payload<T extends { type: string; payload: any }> = Extract<
@@ -9,11 +10,25 @@ type Payload<T extends { type: string; payload: any }> = Extract<
     { type: 'addresses' | 'accounts' }
 >;
 
+// TODO optimize if neccessary
+const mostRecent = (previous: HistoryTx | undefined, current: HistoryTx) => {
+    if (previous === undefined) return current;
+    if (previous.height === -1) return previous;
+    if (current.height === -1) return current;
+    if (previous.height === 0) return previous;
+    if (current.height === 0) return current;
+    return previous.height >= current.height ? previous : current;
+};
+
 const txListener = (client: ElectrumAPI, common: WorkerCommon) => {
     const addressManager = createAddressManager();
 
-    const onTransaction = ([scripthash, _status]: StatusChange) => {
+    const onTransaction = async ([scripthash, _status]: StatusChange) => {
         const { descriptor, addresses } = addressManager.getInfo(scripthash);
+        const history = await client.request('blockchain.scripthash.get_history', scripthash);
+        const recent = history.reduce<HistoryTx | undefined>(mostRecent, undefined);
+        if (!recent) return;
+        const [tx] = await getTransactions(client, [recent.tx_hash]);
         common.response({
             id: -1,
             type: RESPONSES.NOTIFICATION,
@@ -21,7 +36,7 @@ const txListener = (client: ElectrumAPI, common: WorkerCommon) => {
                 type: 'notification',
                 payload: {
                     descriptor,
-                    tx: undefined as any, // TODO
+                    tx: transformTransaction(descriptor, addresses, tx),
                 },
             },
         });

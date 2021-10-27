@@ -1,5 +1,13 @@
-import { Api, flatten, tryGetScripthash, discovery, AddressHistory } from '../utils';
-import type { ElectrumAPI, HistoryTx } from '../api';
+import {
+    Api,
+    flatten,
+    tryGetScripthash,
+    discovery,
+    AddressHistory,
+    getTransactions,
+} from '../utils';
+import { transformTransaction } from '../../blockbook/utils';
+import type { ElectrumAPI } from '../api';
 import type { GetAccountInfo as Req } from '../../../types/messages';
 import type { GetAccountInfo as Res } from '../../../types/responses';
 import type { Address } from '../../../types';
@@ -49,6 +57,24 @@ const getAccountInfo: Api<Req, Res> = async (client, payload) => {
             history,
         }));
         const historyUnconfirmed = history.filter(r => r.height <= 0).length;
+
+        const transactions =
+            details === 'txs'
+                ? await getTransactions(
+                      client,
+                      history.map(({ tx_hash }) => tx_hash)
+                  ).then(txs => txs.map(tx => transformTransaction(descriptor, undefined, tx)))
+                : undefined;
+
+        const page =
+            details === 'txids' || details === 'txs'
+                ? {
+                      index: 1,
+                      size: pageSize || PAGE_SIZE_DEFAULT,
+                      total: 1,
+                  }
+                : undefined;
+
         return {
             descriptor,
             balance: confirmed.toString(),
@@ -57,28 +83,18 @@ const getAccountInfo: Api<Req, Res> = async (client, payload) => {
             history: {
                 total: history.length - historyUnconfirmed,
                 unconfirmed: historyUnconfirmed,
-                ...(details === 'txs'
-                    ? { transactions: [] } // TODO
-                    : {}),
+                transactions,
             },
-            ...(details === 'txids' || details === 'txs'
-                ? {
-                      page: {
-                          index: 1,
-                          size: pageSize || PAGE_SIZE_DEFAULT,
-                          total: 1,
-                      },
-                  }
-                : {}),
+            page,
         };
     }
-    const transformAddressInfo = ({ address, path, history }: AddressInfo): Address => ({
+    const transformAddressInfo = ({ address, path, history, confirmed }: AddressInfo): Address => ({
         address,
         path,
         transfers: history.length,
         ...(details && ['tokenBalances', 'txids', 'txs'].includes(details) && history.length
             ? {
-                  balance: 'TODO',
+                  balance: confirmed.toString(), // TODO or confirmed + unconfirmed?
                   sent: 'TODO',
                   received: 'TODO',
               }
@@ -94,6 +110,27 @@ const getAccountInfo: Api<Req, Res> = async (client, payload) => {
     );
     const history = flatten(batch.map(({ history }) => history));
     const historyUnconfirmed = history.filter(r => r.height <= 0).length;
+
+    const addresses =
+        details === 'tokens' ||
+        details === 'tokenBalances' ||
+        details === 'txids' ||
+        details === 'txs'
+            ? {
+                  change: change.map(transformAddressInfo),
+                  unused: receive.filter(recv => !recv.history.length).map(transformAddressInfo),
+                  used: receive.filter(recv => recv.history.length).map(transformAddressInfo),
+              }
+            : undefined;
+
+    const transactions =
+        details === 'txs'
+            ? await getTransactions(
+                  client,
+                  history.map(({ tx_hash }) => tx_hash)
+              ).then(txs => txs.map(tx => transformTransaction(descriptor, addresses, tx)))
+            : undefined;
+
     return {
         descriptor,
         balance: confirmed.toString(),
@@ -102,18 +139,9 @@ const getAccountInfo: Api<Req, Res> = async (client, payload) => {
         history: {
             total: history.length - historyUnconfirmed,
             unconfirmed: historyUnconfirmed,
+            transactions,
         },
-        ...(details === 'tokens' || details === 'tokenBalances'
-            ? {
-                  addresses: {
-                      change: change.map(transformAddressInfo),
-                      unused: receive
-                          .filter(recv => !recv.history.length)
-                          .map(transformAddressInfo),
-                      used: receive.filter(recv => recv.history.length).map(transformAddressInfo),
-                  },
-              }
-            : {}),
+        addresses,
     };
 };
 

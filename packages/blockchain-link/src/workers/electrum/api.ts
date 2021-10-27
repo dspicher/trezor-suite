@@ -21,7 +21,7 @@ type ServerFeatures = {
           };
 };
 
-type TransactionVerbose = {
+export type TransactionVerbose = {
     txid: string;
     hash: string;
     hex: string;
@@ -50,7 +50,7 @@ type TransactionVerbose = {
             hex: string;
             address?: string;
             addresses?: string[];
-            type: 'nulldata' | 'pubkeyhash' | 'scripthash' | unknown;
+            type: 'nulldata' | 'pubkeyhash' | 'scripthash' | 'pubkey' | unknown;
         };
     }[];
 };

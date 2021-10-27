@@ -1,6 +1,5 @@
-import { fromBase58 } from 'bip32';
 import { decode } from 'bs58';
-import { payments } from '@trezor/utxo-lib';
+import { payments, bip32 } from '@trezor/utxo-lib';
 import { fail } from './misc';
 
 const BIP32_VERSIONS = {
@@ -61,7 +60,7 @@ export const deriveAddresses = (
     const version = decode(xpub).readUInt32BE();
     if (!validateVersion(version)) throw new Error(`Unknown xpub version: ${version}`);
     const network = getNetwork(version);
-    const node = fromBase58(xpub, network);
+    const node = bip32.fromBase58(xpub, network);
     // eslint-disable-next-line
     const account = (node.index << 1) >>> 1; // Unsigned to signed conversion
     const change = type === 'receive' ? 0 : 1;

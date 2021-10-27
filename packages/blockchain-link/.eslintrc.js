@@ -5,7 +5,7 @@ module.exports = {
     },
     overrides: [
         {
-            files: ['**/electrum/api.ts', '**/electrum/methods/*'],
+            files: ['**/electrum/api.ts', '**/electrum/methods/*', '**/electrum/utils/*'],
             rules: {
                 camelcase: "off",
             },
