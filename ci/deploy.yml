@@ -1,89 +1,89 @@
 # Config
-.run_everything_rules: &run_everything_rules
-  refs:
-    - develop
-    - releases
-    - schedules
-    - /^release\//
+# .run_everything_rules: &run_everything_rules
+#   refs:
+#     - develop
+#     - releases
+#     - schedules
+#     - /^release\//
 
-# Suite web deploy to dev
-suite-web deploy dev:
-  stage: deploy to dev
-  variables:
-    DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-web/${CI_BUILD_REF_NAME}
-  needs:
-    - suite-web-landing build dev
-    - suite-web build dev
-  environment:
-    name: ${CI_BUILD_REF_NAME}
-    url: $BASE_REVIEW_URL/${CI_BUILD_REF_NAME}
-  before_script: []
-  script:
-    - mkdir -p ${DEPLOY_DIRECTORY}/web
-    - rsync --delete -va packages/suite-web-landing/build/ "${DEPLOY_DIRECTORY}/"
-    - rsync --delete -va packages/suite-web/build/ "${DEPLOY_DIRECTORY}/web/"
-  tags:
-    - deploy
+# # Suite web deploy to dev
+# suite-web deploy dev:
+#   stage: deploy to dev
+#   variables:
+#     DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-web/${CI_BUILD_REF_NAME}
+#   needs:
+#     - suite-web-landing build dev
+#     - suite-web build dev
+#   environment:
+#     name: ${CI_BUILD_REF_NAME}
+#     url: $BASE_REVIEW_URL/${CI_BUILD_REF_NAME}
+#   before_script: []
+#   script:
+#     - mkdir -p ${DEPLOY_DIRECTORY}/web
+#     - rsync --delete -va packages/suite-web-landing/build/ "${DEPLOY_DIRECTORY}/"
+#     - rsync --delete -va packages/suite-web/build/ "${DEPLOY_DIRECTORY}/web/"
+#   tags:
+#     - deploy
 
-# Suite web landing deploy to dev
-suite-web-landing deploy dev:
-  stage: deploy to dev
-  variables:
-    DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-web-landing/${CI_BUILD_REF_NAME}
-  needs:
-    - suite-web-landing build dev
-  environment:
-    name: ${CI_BUILD_REF_NAME}
-    url: $BASE_REVIEW_URL/${CI_BUILD_REF_NAME}
-  before_script: []
-  script:
-    - mkdir -p ${DEPLOY_DIRECTORY}
-    - rsync --delete -va packages/suite-web-landing/build/ "${DEPLOY_DIRECTORY}/"
-  tags:
-    - deploy
+# # Suite web landing deploy to dev
+# suite-web-landing deploy dev:
+#   stage: deploy to dev
+#   variables:
+#     DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-web-landing/${CI_BUILD_REF_NAME}
+#   needs:
+#     - suite-web-landing build dev
+#   environment:
+#     name: ${CI_BUILD_REF_NAME}
+#     url: $BASE_REVIEW_URL/${CI_BUILD_REF_NAME}
+#   before_script: []
+#   script:
+#     - mkdir -p ${DEPLOY_DIRECTORY}
+#     - rsync --delete -va packages/suite-web-landing/build/ "${DEPLOY_DIRECTORY}/"
+#   tags:
+#     - deploy
 
-# Suite desktop deploy to dev and production
-suite-desktop deploy dev:
-  stage: deploy to dev
-  only:
-    <<: *run_everything_rules
-  variables:
-    DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-desktop/${CI_BUILD_REF_NAME}
-  script:
-    - mkdir -p ${DEPLOY_DIRECTORY}
-    - 'rsync --delete -va "${DESKTOP_APP_NAME}"-*.AppImage "${DEPLOY_DIRECTORY}/" || :'
-    - 'rsync --delete -va "${DESKTOP_APP_NAME}"-*.dmg "${DEPLOY_DIRECTORY}/" || :'
-    - 'rsync --delete -va "${DESKTOP_APP_NAME}"-*.exe "${DEPLOY_DIRECTORY}/" || :'
-  tags:
-    - deploy
+# # Suite desktop deploy to dev and production
+# suite-desktop deploy dev:
+#   stage: deploy to dev
+#   only:
+#     <<: *run_everything_rules
+#   variables:
+#     DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-desktop/${CI_BUILD_REF_NAME}
+#   script:
+#     - mkdir -p ${DEPLOY_DIRECTORY}
+#     - 'rsync --delete -va "${DESKTOP_APP_NAME}"-*.AppImage "${DEPLOY_DIRECTORY}/" || :'
+#     - 'rsync --delete -va "${DESKTOP_APP_NAME}"-*.dmg "${DEPLOY_DIRECTORY}/" || :'
+#     - 'rsync --delete -va "${DESKTOP_APP_NAME}"-*.exe "${DEPLOY_DIRECTORY}/" || :'
+#   tags:
+#     - deploy
 
-# Suite native deploy to dev
-suite-native deploy dev:
-  stage: deploy to dev
-  only:
-    <<: *run_everything_rules
-  variables:
-    DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-native/${CI_BUILD_REF_NAME}
-  script:
-    - mkdir -p ${DEPLOY_DIRECTORY}
-    - rsync --delete -va app-release.apk "${DEPLOY_DIRECTORY}/"
-  tags:
-    - deploy
+# # Suite native deploy to dev
+# suite-native deploy dev:
+#   stage: deploy to dev
+#   only:
+#     <<: *run_everything_rules
+#   variables:
+#     DEPLOY_DIRECTORY: ${DEPLOY_BASE_DIR}/suite-native/${CI_BUILD_REF_NAME}
+#   script:
+#     - mkdir -p ${DEPLOY_DIRECTORY}
+#     - rsync --delete -va app-release.apk "${DEPLOY_DIRECTORY}/"
+#   tags:
+#     - deploy
 
-# Messaging system deploy to dev
-msg-system deploy dev:
-  stage: deploy to dev
-  needs:
-    - "msg-system config sign dev"
-  when: manual
-  tags:
-    - deploy
-  variables:
-    AWS_CLOUDFRONT_ID: E1ERY5K2OTKKI1
-  script:
-    - source ${MSG_SYSTEM_DATA_DEPLOY_KEYFILE}
-    - aws s3 cp packages/suite-data/files/message-system/config.v1.jws s3://data.trezor.io/config/develop/config.v1.jws
-    - aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_ID} --paths '/config/develop/*'
+# # Messaging system deploy to dev
+# msg-system deploy dev:
+#   stage: deploy to dev
+#   needs:
+#     - "msg-system config sign dev"
+#   when: manual
+#   tags:
+#     - deploy
+#   variables:
+#     AWS_CLOUDFRONT_ID: E1ERY5K2OTKKI1
+#   script:
+#     - source ${MSG_SYSTEM_DATA_DEPLOY_KEYFILE}
+#     - aws s3 cp packages/suite-data/files/message-system/config.v1.jws s3://data.trezor.io/config/develop/config.v1.jws
+#     - aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_ID} --paths '/config/develop/*'
 
 connect-explorer deploy dev:
   stage: deploy to dev
@@ -97,53 +97,53 @@ connect-explorer deploy dev:
   before_script: []
   script:
     - mkdir -p ${DEPLOY_DIRECTORY}/connect-explorer
-    - rsync --delete -va packages/connect-explorer/build/ "${DEPLOY_DIRECTORY}/connect-explorer/"
+    - rsync --delete -va packages/connect-explorer/build/ "${DEPLOY_DIRECTORY}/"
   tags:
     - deploy
 
 # npm packages deploy to npm registry
-.npm_deploy_rules: &npm_deploy_rules
-  stage: deploy to dev
-  when: manual
-  tags:
-    - deploy
-  before_script:
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-  after_script:
-    - rm ~/.npmrc
+# .npm_deploy_rules: &npm_deploy_rules
+#   stage: deploy to dev
+#   when: manual
+#   tags:
+#     - deploy
+#   before_script:
+#     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+#   after_script:
+#     - rm ~/.npmrc
 
-beta blockchain-link deploy npm:
-  <<: *npm_deploy_rules
-  script:
-    - nix-shell --run "yarn && cd ./packages/blockchain-link && npm publish --tag beta"
+# beta blockchain-link deploy npm:
+#   <<: *npm_deploy_rules
+#   script:
+#     - nix-shell --run "yarn && cd ./packages/blockchain-link && npm publish --tag beta"
 
-beta components deploy npm:
-  <<: *npm_deploy_rules
-  script:
-    - nix-shell --run "yarn && cd ./packages/components && npm publish --tag beta"
+# beta components deploy npm:
+#   <<: *npm_deploy_rules
+#   script:
+#     - nix-shell --run "yarn && cd ./packages/components && npm publish --tag beta"
 
-beta rollout deploy npm:
-  <<: *npm_deploy_rules
-  script:
-    - nix-shell --run "yarn && cd ./packages/rollout && npm publish --tag beta"
+# beta rollout deploy npm:
+#   <<: *npm_deploy_rules
+#   script:
+#     - nix-shell --run "yarn && cd ./packages/rollout && npm publish --tag beta"
 
-blockchain-link deploy npm:
-  only:
-    <<: *run_everything_rules
-  <<: *npm_deploy_rules
-  script:
-    - nix-shell --run "yarn && cd ./packages/blockchain-link && npm publish"
+# blockchain-link deploy npm:
+#   only:
+#     <<: *run_everything_rules
+#   <<: *npm_deploy_rules
+#   script:
+#     - nix-shell --run "yarn && cd ./packages/blockchain-link && npm publish"
 
-components deploy npm:
-  only:
-    <<: *run_everything_rules
-  <<: *npm_deploy_rules
-  script:
-    - nix-shell --run "yarn && cd ./packages/components && npm publish"
+# components deploy npm:
+#   only:
+#     <<: *run_everything_rules
+#   <<: *npm_deploy_rules
+#   script:
+#     - nix-shell --run "yarn && cd ./packages/components && npm publish"
 
-rollout deploy npm:
-  only:
-    <<: *run_everything_rules
-  <<: *npm_deploy_rules
-  script:
-    - nix-shell --run "yarn && cd ./packages/rollout && npm publish"
+# rollout deploy npm:
+#   only:
+#     <<: *run_everything_rules
+#   <<: *npm_deploy_rules
+#   script:
+#     - nix-shell --run "yarn && cd ./packages/rollout && npm publish"

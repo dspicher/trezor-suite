@@ -1,23 +1,163 @@
 # e2e tests
-.e2e web:
+# .e2e web:
+#   stage: integration testing
+#   needs:
+#     - suite-web deploy dev
+#   variables:
+#     COMPOSE_PROJECT_NAME: $CI_JOB_ID
+#     COMPOSE_FILE: ./docker/docker-compose.suite-ci.yml
+#     ## Tells Cypress where is the index of application
+#     CYPRESS_ASSET_PREFIX: /web
+#     CYPRESS_baseUrl: ${DEV_SERVER_URL}/suite-web/${CI_BUILD_REF_NAME}
+#     ## should tests do snapshot testing
+#     CYPRESS_SNAPSHOT: 1
+#     ## reporter url
+#     TRACK_SUITE_URL: https://track-suite.herokuapp.com
+#     ## when debugging or developing tests it does not make sense to have retries,
+#     ## in other cases retries are useful to avoid occasional failures due to flaky tests
+#     ALLOW_RETRY: 1
+#   before_script:
+#     - docker login $CI_DEPENDENCY_PROXY_SERVER -u $CI_DEPENDENCY_PROXY_USER -p $CI_DEPENDENCY_PROXY_PASSWORD
+#   script:
+#     - yarn install --pure-lockfile --cache-folder .yarn --prefer-offline
+#     - docker-compose pull
+#     - docker-compose up -d trezor-user-env-unix
+#     - sleep 5
+#     - docker-compose run test-run
+#   after_script:
+#     - docker cp ${CI_JOB_ID}_trezor-user-env-unix_1:/trezor-user-env/logs/debugging.log trezor-user-env-debugging.log
+#     - docker cp ${CI_JOB_ID}_trezor-user-env-unix_1:/trezor-user-env/docker/version.txt trezor-user-env-version.txt
+#     - docker-compose down
+#     - docker network prune -f
+#   artifacts:
+#     expire_in: 7 days
+#     when: always
+#     paths:
+#       - ./packages/integration-tests/projects/suite-web/snapshots
+#       - ./packages/integration-tests/projects/suite-web/screenshots
+#       - ./packages/integration-tests/projects/suite-web/videos
+#       - download-snapshots.sh
+#       - trezor-user-env-debugging.log
+#       - trezor-user-env-version.txt
+
+# e2e web suite:
+#   extends: .e2e web
+#   variables:
+#     TEST_GROUP: '@group:suite'
+
+# e2e web onboarding:
+#   extends: .e2e web
+#   variables:
+#     TEST_GROUP: '@group:onboarding'
+
+# e2e web device-management:
+#   extends: .e2e web
+#   variables:
+#     TEST_GROUP: '@group:device-management'
+
+# e2e web settings:
+#   extends: .e2e web
+#   variables:
+#     TEST_GROUP: '@group:settings'
+
+# e2e web metadata:
+#   extends: .e2e web
+#   variables:
+#     TEST_GROUP: '@group:metadata'
+
+# # bounty group gathers flaky tests.
+# e2e web bounty:
+#   extends: .e2e web
+#   allow_failure: true
+#   variables:
+#     TEST_GROUP: '@group:bounty'
+#     ALLOW_RETRY: 0
+
+
+# ## Update snapshots
+# ## You may update snapshots either locally (see readme https://docs.trezor.io/trezor-suite/tests/e2e-web.html)
+# ## But as this is quite time consuming you may prefer to do it in CI
+
+# # TODO: should there be one job updating all? not sure
+# e2e web suite snapshots:
+#   when: manual
+#   extends: .e2e web
+#   variables:
+#     CYPRESS_SNAPSHOT: 1
+#     CYPRESS_updateSnapshots: 1
+#     TEST_GROUP: '@group:suite'
+
+# e2e web onboarding snapshots:
+#   when: manual
+#   extends: .e2e web
+#   variables:
+#     CYPRESS_SNAPSHOT: 1
+#     CYPRESS_updateSnapshots: 1
+#     TEST_GROUP: '@group:onboarding'
+
+# e2e web device-management snapshots:
+#   when: manual
+#   extends: .e2e web
+#   variables:
+#     CYPRESS_SNAPSHOT: 1
+#     CYPRESS_updateSnapshots: 1
+#     TEST_GROUP: '@group:device-management'
+
+# e2e web settings snapshots:
+#   when: manual
+#   extends: .e2e web
+#   variables:
+#     CYPRESS_SNAPSHOT: 1
+#     CYPRESS_updateSnapshots: 1
+#     TEST_GROUP: '@group:settings'
+
+# e2e web metadata snapshots:
+#   when: manual
+#   extends: .e2e web
+#   variables:
+#     CYPRESS_SNAPSHOT: 1
+#     CYPRESS_updateSnapshots: 1
+#     TEST_GROUP: '@group:metadata'
+
+# e2e web all snapshots:
+#   when: manual
+#   extends: .e2e web
+#   variables:
+#     CYPRESS_SNAPSHOT: 1
+#     CYPRESS_updateSnapshots: 1
+
+# # TODO scheduled jobs against beta chrome channel
+# # TODO scheduled jobs against suite.trezor.io
+
+# # Rollout test
+
+# ## This test should exist only until trezor-connect is in monorepo.
+# ## It checks whether rollout works with currently released webwallet data
+# rollout test integration:
+#   only:
+#     refs:
+#       - develop
+#       - schedules
+#   stage: integration testing
+#   script:
+#     - yarn install --frozen-lockfile --cache-folder .yarn --prefer-offline
+#     - yarn workspace @trezor/rollout test:integration
+
+# rollout test integration manual:
+#   when: manual
+#   stage: integration testing
+#   script:
+#     - yarn install --frozen-lockfile --cache-folder .yarn --prefer-offline
+#     - yarn workspace @trezor/rollout test:integration
+
+connect-popup test integration:
   stage: integration testing
-  needs:
-    - suite-web deploy dev
   variables:
     COMPOSE_PROJECT_NAME: $CI_JOB_ID
-    COMPOSE_FILE: ./docker/docker-compose.suite-ci.yml
-    ## Tells Cypress where is the index of application
-    CYPRESS_ASSET_PREFIX: /web
-    CYPRESS_baseUrl: ${DEV_SERVER_URL}/suite-web/${CI_BUILD_REF_NAME}
-    ## should tests do snapshot testing
-    CYPRESS_SNAPSHOT: 1
-    ## reporter url
-    TRACK_SUITE_URL: https://track-suite.herokuapp.com
-    ## when debugging or developing tests it does not make sense to have retries,
-    ## in other cases retries are useful to avoid occasional failures due to flaky tests
-    ALLOW_RETRY: 1
-  before_script:
-    - docker login $CI_DEPENDENCY_PROXY_SERVER -u $CI_DEPENDENCY_PROXY_USER -p $CI_DEPENDENCY_PROXY_PASSWORD
+    COMPOSE_FILE: ./docker/docker-compose.connect-explorer-ci.yml
+    URL: ${DEV_SERVER_URL}/connect-explorer/${CI_BUILD_REF_NAME}/
+  # environment:
+  #   URL: ${DEV_SERVER_URL}/connect-explorer/${CI_BUILD_REF_NAME}/
   script:
     - yarn install --pure-lockfile --cache-folder .yarn --prefer-offline
     - docker-compose pull
@@ -25,127 +165,10 @@
     - sleep 5
     - docker-compose run test-run
   after_script:
-    - docker cp ${CI_JOB_ID}_trezor-user-env-unix_1:/trezor-user-env/logs/debugging.log trezor-user-env-debugging.log
-    - docker cp ${CI_JOB_ID}_trezor-user-env-unix_1:/trezor-user-env/docker/version.txt trezor-user-env-version.txt
     - docker-compose down
     - docker network prune -f
   artifacts:
     expire_in: 7 days
     when: always
     paths:
-      - ./packages/integration-tests/projects/suite-web/snapshots
-      - ./packages/integration-tests/projects/suite-web/screenshots
-      - ./packages/integration-tests/projects/suite-web/videos
-      - download-snapshots.sh
-      - trezor-user-env-debugging.log
-      - trezor-user-env-version.txt
-
-e2e web suite:
-  extends: .e2e web
-  variables:
-    TEST_GROUP: '@group:suite'
-
-e2e web onboarding:
-  extends: .e2e web
-  variables:
-    TEST_GROUP: '@group:onboarding'
-
-e2e web device-management:
-  extends: .e2e web
-  variables:
-    TEST_GROUP: '@group:device-management'
-
-e2e web settings:
-  extends: .e2e web
-  variables:
-    TEST_GROUP: '@group:settings'
-
-e2e web metadata:
-  extends: .e2e web
-  variables:
-    TEST_GROUP: '@group:metadata'
-
-# bounty group gathers flaky tests.
-e2e web bounty:
-  extends: .e2e web
-  allow_failure: true
-  variables:
-    TEST_GROUP: '@group:bounty'
-    ALLOW_RETRY: 0
-
-
-## Update snapshots
-## You may update snapshots either locally (see readme https://docs.trezor.io/trezor-suite/tests/e2e-web.html)
-## But as this is quite time consuming you may prefer to do it in CI
-
-# TODO: should there be one job updating all? not sure
-e2e web suite snapshots:
-  when: manual
-  extends: .e2e web
-  variables:
-    CYPRESS_SNAPSHOT: 1
-    CYPRESS_updateSnapshots: 1
-    TEST_GROUP: '@group:suite'
-
-e2e web onboarding snapshots:
-  when: manual
-  extends: .e2e web
-  variables:
-    CYPRESS_SNAPSHOT: 1
-    CYPRESS_updateSnapshots: 1
-    TEST_GROUP: '@group:onboarding'
-
-e2e web device-management snapshots:
-  when: manual
-  extends: .e2e web
-  variables:
-    CYPRESS_SNAPSHOT: 1
-    CYPRESS_updateSnapshots: 1
-    TEST_GROUP: '@group:device-management'
-
-e2e web settings snapshots:
-  when: manual
-  extends: .e2e web
-  variables:
-    CYPRESS_SNAPSHOT: 1
-    CYPRESS_updateSnapshots: 1
-    TEST_GROUP: '@group:settings'
-
-e2e web metadata snapshots:
-  when: manual
-  extends: .e2e web
-  variables:
-    CYPRESS_SNAPSHOT: 1
-    CYPRESS_updateSnapshots: 1
-    TEST_GROUP: '@group:metadata'
-
-e2e web all snapshots:
-  when: manual
-  extends: .e2e web
-  variables:
-    CYPRESS_SNAPSHOT: 1
-    CYPRESS_updateSnapshots: 1
-
-# TODO scheduled jobs against beta chrome channel
-# TODO scheduled jobs against suite.trezor.io
-
-# Rollout test
-
-## This test should exist only until trezor-connect is in monorepo.
-## It checks whether rollout works with currently released webwallet data
-rollout test integration:
-  only:
-    refs:
-      - develop
-      - schedules
-  stage: integration testing
-  script:
-    - yarn install --frozen-lockfile --cache-folder .yarn --prefer-offline
-    - yarn workspace @trezor/rollout test:integration
-
-rollout test integration manual:
-  when: manual
-  stage: integration testing
-  script:
-    - yarn install --frozen-lockfile --cache-folder .yarn --prefer-offline
-    - yarn workspace @trezor/rollout test:integration
+      - ./packages/connect-popup/screenshots
