@@ -16,7 +16,7 @@ export const LAYOUT_SIZE = {
 export const Z_INDEX = {
     MODAL: 10000,
     NAVIGATION_BAR: 30,
-    GUIDE_PANEL: 15,
+    GUIDE_PANEL: 10001,
     BETA_BADGE: 13,
     GUIDE_BUTTON: 10,
 } as const;

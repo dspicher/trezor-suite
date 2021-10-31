@@ -24,8 +24,8 @@ const PageWrapper = styled.div`
     overflow-x: hidden;
 `;
 
-const Body = styled.div`
-    position: relative;
+const Body = styled.div<{ elsOpen?: boolean }>`
+    position: ${props => (props.elsOpen ? `unset` : `relative`)};
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -88,11 +88,12 @@ const DefaultPaddings = styled.div`
     }
 `;
 
-const StyledGuidePanel = styled(GuidePanel)<{ open?: boolean }>`
+const StyledGuidePanel = styled(GuidePanel)<{ open?: boolean; isModalOpen?: boolean }>`
     height: 100%;
     width: ${variables.LAYOUT_SIZE.GUIDE_PANEL_WIDTH};
     flex: 0 0 ${variables.LAYOUT_SIZE.GUIDE_PANEL_WIDTH};
-    z-index: ${variables.Z_INDEX.GUIDE_PANEL};
+    z-index: ${props =>
+        props.isModalOpen ? variables.Z_INDEX.GUIDE_PANEL : variables.Z_INDEX.NAVIGATION_BAR - 1};
     border-left: 1px solid ${props => props.theme.STROKE_GREY};
     position: absolute;
     right: 0;
@@ -103,6 +104,13 @@ const StyledGuidePanel = styled(GuidePanel)<{ open?: boolean }>`
         props.open &&
         css`
             transform: translateX(0);
+        `}
+
+    ${props =>
+        props.isModalOpen &&
+        css`
+            top: 0;
+            bottom: 0;
         `}
 `;
 
@@ -126,6 +134,7 @@ interface MobileBodyProps {
 
 interface NormalBodyProps extends MobileBodyProps {
     isMenuInline: boolean;
+    isModalOpen?: boolean;
 }
 
 interface LayoutContextI {
@@ -156,8 +165,16 @@ const ScrollAppWrapper = ({ url, children }: ScrollAppWrapperProps) => {
     return <AppWrapper ref={ref}>{children}</AppWrapper>;
 };
 
-const BodyNormal = ({ url, menu, appMenu, children, guideOpen, isMenuInline }: NormalBodyProps) => (
-    <Body>
+const BodyNormal = ({
+    url,
+    menu,
+    appMenu,
+    children,
+    guideOpen,
+    isMenuInline,
+    isModalOpen,
+}: NormalBodyProps) => (
+    <Body elsOpen={isModalOpen && guideOpen}>
         <Columns guideOpen={guideOpen}>
             {!isMenuInline && menu && <MenuSecondary>{menu}</MenuSecondary>}
             <ScrollAppWrapper url={url}>
@@ -167,7 +184,13 @@ const BodyNormal = ({ url, menu, appMenu, children, guideOpen, isMenuInline }: N
                     <MaxWidthWrapper>{children}</MaxWidthWrapper>
                 </DefaultPaddings>
             </ScrollAppWrapper>
-            {guideOpen && <StyledGuidePanel data-test="@guide/panel" open={guideOpen} />}
+            {guideOpen && (
+                <StyledGuidePanel
+                    isModalOpen={isModalOpen}
+                    data-test="@guide/panel"
+                    open={guideOpen}
+                />
+            )}
         </Columns>
     </Body>
 );
@@ -253,6 +276,7 @@ const SuiteLayout = (props: SuiteLayoutProps) => {
                         url={props.router.url}
                         guideOpen={guideOpen}
                         isMenuInline={isMenuInline}
+                        isModalOpen={isModalOpen}
                     >
                         {props.children}
                     </BodyNormal>

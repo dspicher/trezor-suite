@@ -31,7 +31,7 @@ const FIXED_WIDTH_SMALL: [string, string, string, string] = ['100vw', '90vw', '6
 const FIXED_WIDTH_TINY: [string, string, string, string] = ['360px', '360px', '360px', '360px'];
 const FIXED_HEIGHT: [string, string, string, string] = ['90vh', '90vh', '620px', '620px'];
 
-const ModalOverlay = styled.div<{ guidePanelSize: string }>`
+const ModalOverlay = styled.div<{ guidePanelSize: string; guideOpen?: boolean }>`
     position: fixed;
     z-index: 10000;
     width: ${props => `calc(100% - ${props.guidePanelSize})`};
@@ -483,6 +483,7 @@ const Modal = ({
                     onCancel();
                 }
             }}
+            guideOpen={guideOpen}
         >
             {header && <Header>{header}</Header>}
             {modalWindow}
