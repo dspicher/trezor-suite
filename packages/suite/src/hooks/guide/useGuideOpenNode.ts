@@ -15,10 +15,7 @@ export const useGuideOpenNode = () => {
         open: state.guide.open,
     }));
 
-    const openNodeById = (id: string, e?: React.MouseEvent) => {
-        if (e) {
-            e.stopPropagation();
-        }
+    const openNodeById = (id: string) => {
         if (!indexNode) {
             console.error(`Guide index node was not found.`);
             return;

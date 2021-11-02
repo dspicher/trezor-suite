@@ -154,7 +154,7 @@ const Preloader = ({ children, hideModals = false }: Props) => {
     // everything is set.
     return (
         <>
-            {!hideModals && <Modals background="" />}
+            {!hideModals && <Modals />}
             <SuiteLayout>{children}</SuiteLayout>
         </>
     );

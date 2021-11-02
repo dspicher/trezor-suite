@@ -56,7 +56,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 
 type Props = ReturnType<typeof mapStateToProps> &
     ReturnType<typeof mapDispatchToProps> & {
-        background?: boolean | string;
+        background?: boolean;
     };
 
 // Modals requested byt Device from `trezor-connect`
@@ -249,8 +249,6 @@ const Modal = (props: Props) => {
     }
 
     if (!modalComponent) return null;
-
-    console.log(props.background);
 
     const useBackground = props.background ?? true;
     if (useBackground) {

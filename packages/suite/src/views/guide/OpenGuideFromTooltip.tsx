@@ -38,7 +38,13 @@ type OpenGuideFromTooltipProps = {
 const OpenGuideFromTooltip = ({ id, dataTest }: OpenGuideFromTooltipProps) => {
     const { openNodeById } = useGuideOpenNode();
     return (
-        <OpenGuideLink data-test={dataTest} onClick={e => openNodeById(id, e)}>
+        <OpenGuideLink
+            data-test={dataTest}
+            onClick={e => {
+                e.stopPropagation();
+                openNodeById(id);
+            }}
+        >
             <StyledText>
                 <Translation id="TR_LEARN" />
             </StyledText>
